@@ -16,7 +16,7 @@ spark = SparkSession.builder.appName(appName).config("spark.some.config.option",
 
 # É necessário alterar o path do csv 
 tweets_csv = spark.read.csv('/home/gabriel/Downloads/spark-3.1.2-bin-hadoop3.2/bin/twitter-suicidal_data.csv', inferSchema=True, header=True)
-
+##tweets_csv = spark.read.csv('/home/gabriel/Downloads/spark-3.1.2-bin-hadoop3.2/bin/traduzido', inferSchema=True, header=True)
 
 #seleciono do dataset as colunas 
 
@@ -83,3 +83,4 @@ print(acuracia)
 ################# 
 #preciso colocar o endereço da onde vou salvar o modelo
 model.save("path")
+
