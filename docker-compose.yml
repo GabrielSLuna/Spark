@@ -1,0 +1,79 @@
+version: "3.7"
+
+
+
+# create Zookeeper service to manage Kafka
+services:
+
+  web:
+    build:
+      context: .
+    image: web-spark
+    container_name: web
+    environment:
+      - PYTHONUNBUFFERED=1      # atualizacao automatica do log do django
+    ports:
+      - "8007:8007" # Porta para attach do vs code ao código python rodando no docker
+    links:
+      - kafka
+    volumes:
+      - .:/usr/src/app
+    command: bash -c "python manage.py runserver 0.0.0.0:8007"
+
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.7
+    ports:
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+# create first Kafka node
+  kafka:
+    image: docker.io/bitnami/kafka:2.8.1
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+
+
+# create Spark master
+  # spark_master:
+  #   image: gettyimages/spark:2.4.1-hadoop-3.0
+  #   command: bin/spark-class org.apache.spark.deploy.master.Master -h master
+  #   hostname: master
+  #   environment:
+  #     MASTER: spark://master:7077
+  #     SPARK_CONF_DIR: /conf
+  #     SPARK_PUBLIC_DNS: localhost 
+  #   expose:
+  #     - 7001
+  #     - 7002
+  #     - 7003
+  #     - 7004
+  #     - 7005
+  #     - 7077
+  #     - 6066
+  #   ports:
+  #     - "4040:4040"
+  #     - "6066:6066"
+  #     - "7077:7077"
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./conf/master:/conf
+  #     - ./data:/tmp/data
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local

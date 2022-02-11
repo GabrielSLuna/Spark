@@ -1,0 +1,3 @@
+Django
+kafka-python
+tweepy==3.9.0

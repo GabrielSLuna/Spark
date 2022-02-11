@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <!-- Create a div where the graph will take place -->
+
+<div class="row">
+  {% for k, v in teste.items %}
+  <div class="col-12 col-lg-6 col-xl">
+
+    <!-- Value  -->
+    <div class="card">
+      <div class="card-body">
+        <div class="row align-items-center gx-0">
+          <div class="col">
+
+            <!-- Title -->
+            <h6 class="text-uppercase text-muted mb-2">
+              {{ k }}
+            </h6>
+
+            <!-- Heading -->
+            <span class="h2 mb-0">
+              {{ v }}
+            </span>
+
+          </div>
+          <div class="col-auto">
+
+            <!-- Icon -->
+            <span class="h2 fe fe-dollar-sign text-muted mb-0"></span>
+
+          </div>
+        </div> <!-- / .row -->
+      </div>
+    </div>
+
+  </div>
+{% endfor %}
+</div>
+
+<div class="row mt-5">
+  <div class="col-md-4">
+      <div class="card">
+          <div class="card-body">
+              <canvas id="myChart"></canvas>
+          </div>
+      </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+        <div class="card-body">
+          <div class="col-md-4" id="my_dataviz"></div>
+        </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card">
+        <div class="card-body">
+            <canvas id="bubble-chart"></canvas>
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+var margin = {top: 10, right: 30, bottom: 30, left: 60},
+    width = 350,
+    height = 282 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .classed("svg-content-responsive", true)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("text")
+    .attr("x", (width / 2))             
+    .attr("y", 5)
+    .attr("text-anchor", "middle")  
+    .style("font-size", "16px") 
+    .style("text-decoration", "underline")  
+    .text("Rentabilidade");
+
+svg.append("circle").attr("cx",200).attr("cy",130).attr("r", 6).style("fill", "steelblue")
+svg.append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "red")
+svg.append("text").attr("x", 220).attr("y", 130).text("Soma de NCH Maracanã FIA").style("font-size", "15px").attr("alignment-baseline","middle")
+svg.append("text").attr("x", 220).attr("y", 160).text("IBX100").style("font-size", "15px").attr("alignment-baseline","middle")
+
+var y;
+var x;
+d3.json("{% url 'index' %}", function(error, data) {
+
+  data.forEach(function(d) {
+    // console.log(d);
+    return { date : d3.timeParse("%Y-%m-%d")(d.date), close : d.close }
+  })
+
+    x = d3.scaleTime()
+      .domain([new Date("2020-01-01"), new Date("2021-01-01")])
+      .range([ 0, 450 ]);
+
+    var xAxis = d3.axisBottom(x)
+      .tickFormat(d3.timeFormat("%b"));
+    
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .attr("class", "axiswhite")
+      .call(xAxis);
+
+    // Add Y axis
+    y = d3.scaleLinear()
+      .domain([0, d3.max(data,  function(d) {  return +d.close; })])
+      .range([ height, 0 ]);
+    svg.append("g")
+      .attr("class", "axiswhite")
+      .call(d3.axisLeft(y));
+      
+
+    // Add the line
+    svg.append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 2)
+      .attr("d", d3.line()
+        .x(function(d) { return x(new Date(d.date)) })
+        .y(function(d) { return y(d.close) })
+        );
+
+});
+
+d3.json("{% url 'index' %}", function(error, data) {
+
+  data.forEach(function(d) {
+    // console.log(d);
+    return { date : d3.timeParse("%Y-%m-%d")(d.date), close : d.close }
+  })
+
+  // Add the line
+  svg.append("path")
+    .datum(data)
+    .attr("fill", "none")
+    .attr("stroke", "red")
+    .attr("stroke-width", 2)
+    .attr("d", d3.line()
+      .x(function(d) { return x(new Date(d.date)) })
+      .y(function(d) { return y(d.close) })
+      );
+
+});
+
+</script>
+{% endblock %}
