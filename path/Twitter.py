@@ -37,6 +37,7 @@ csvFile = open('resultadoFinal.csv', 'a')
 #Use csv writer
 csvWriter = csv.writer(csvFile)
 search_words = ["i want to die","i dont want to live anymore","i will kill myself","live","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die"]
+#search_words = ["eu quero morrer", "quero me matar","nao quero viver mais", "vou me matar", "viver", "porra", "qualquer um", "mau", "merda", "tentei", "suicida", "dor", "desejo", "suficiente", "queria", "morrer", "morte", "foda-se", "não me importo", "quero morrer"]
 numberOfTweets = 10000
 for x in search_words:
     print(x)
@@ -44,7 +45,7 @@ for x in search_words:
                                q =  x,
                                geocode="-22.9110137,-43.2093727,300km",
 
-                               # since = "2014-02-14",
+                               # since = "2021-12-05",
                                #until = "2014-02-15",
                                lang = "en").items(400):
 
@@ -62,8 +63,10 @@ for x in search_words:
        # print(tweet.user.location) # E o 5 e ultimo. Estava 30C
 
         #print(tweet.user.screen_name, tweet.created_at, twitter_limpo, tweet.user.location)
-        lista = [twitter_limpo,"Localizacao"+tweet.user.location]
+        lista = [twitter_limpo,"#"+tweet.user.location,"#"+tweet.user.screen_name,"#"+tweet.created_at.strftime("%d ,%m, %Y , %H:%M:%S")]
+        #lista = [twitter_limpo,tweet.user.location]
         producer.send("Analise-de-Twitter", lista)
         print(lista)
        # send_to_producer(lista)
 csvFile.close()
+
