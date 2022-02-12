@@ -111,7 +111,7 @@ if __name__ == "__main__":
    
 
     #pipeline_model = PipelineModel.load("/home/gabriel/Downloads/spark-3.0.3-bin-hadoop2.7/bin/path") 
-    pipeline_model = PipelineModel.load("/home/gabriel/Downloads/spark-3.1.2-bin-hadoop3.2/bin/path") 
+    pipeline_model = PipelineModel.load("/opt/bitnami/spark/path") 
 
 
     prediction = pipeline_model.transform(lines_query)
@@ -124,14 +124,14 @@ if __name__ == "__main__":
 
 
     predicao = predicao.select("tweet","Localizacao","prediction")
-    predicao = predicao.filter(predicao.prediction == 1)
+    # predicao = predicao.filter(predicao.prediction == 1)
 
 
 
     testeQuery = predicao.writeStream.format("console").outputMode("append").option("truncate", "false").start()
 
 #### TESTE####
-    predicao.writeStream.format("parquet").trigger(processingTime = "1800 seconds").option("format", "append").option("checkpointLocation","/home/gabriel/Downloads/spark").option("path","/home/gabriel/Downloads/spark").start()
+    # predicao.writeStream.format("parquet").trigger(processingTime = "1800 seconds").option("format", "append").option("checkpointLocation","/home/gabriel/Downloads/spark").option("path","/home/gabriel/Downloads/spark").start()
 #################
     #escolho somente os twitters que tiveram intenção suicida, ou seja true
 

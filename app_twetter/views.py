@@ -70,7 +70,7 @@ def send_to_producer(request):
             #print(tweet.user.screen_name, tweet.created_at, twitter_limpo, tweet.user.location)
             lista = [twitter_limpo,"Localizacao"+tweet.user.location]
             # print ('---------------', producer)
-            producer.send("Analise-de-Twitter-1", lista)
+            producer.send("Analise-de-Twitter", lista)
             print(lista)
         # csvFile.close()
 

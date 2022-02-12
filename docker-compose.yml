@@ -1,21 +1,32 @@
 version: "3.7"
 
-
-
-# create Zookeeper service to manage Kafka
 services:
+  db:
+    image: postgres
+    # restart: always
+    container_name: twitter-db
+    environment:
+      POSTGRES_PASSWORD: twitter
+      POSTGRES_USER: twitter
+      POSTGRES_DB: twitter
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
 
   web:
     build:
       context: .
     image: web-spark
-    container_name: web
+    container_name: twitter-web
     environment:
       - PYTHONUNBUFFERED=1      # atualizacao automatica do log do django
     ports:
       - "8007:8007" # Porta para attach do vs code ao código python rodando no docker
     links:
       - kafka
+      - db
     volumes:
       - .:/usr/src/app
     command: bash -c "python manage.py runserver 0.0.0.0:8007"
@@ -36,6 +47,7 @@ services:
       - "9092:9092"
     volumes:
       - "kafka_data:/bitnami"
+    container_name: twitter-kafka
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
@@ -47,30 +59,24 @@ services:
 
 
 # create Spark master
-  # spark_master:
-  #   image: gettyimages/spark:2.4.1-hadoop-3.0
-  #   command: bin/spark-class org.apache.spark.deploy.master.Master -h master
-  #   hostname: master
-  #   environment:
-  #     MASTER: spark://master:7077
-  #     SPARK_CONF_DIR: /conf
-  #     SPARK_PUBLIC_DNS: localhost 
-  #   expose:
-  #     - 7001
-  #     - 7002
-  #     - 7003
-  #     - 7004
-  #     - 7005
-  #     - 7077
-  #     - 6066
-  #   ports:
-  #     - "4040:4040"
-  #     - "6066:6066"
-  #     - "7077:7077"
-  #     - "8080:8080"
-  #   volumes:
-  #     - ./conf/master:/conf
-  #     - ./data:/tmp/data
+  spark:
+    image: docker.io/bitnami/spark:3.1.2
+    container_name: twitter-spark
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    user: root
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./path:/opt/bitnami/spark/path
+      - ./spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
+      - ./jars_dir:/opt/bitnami/spark/ivy:z
+    links:
+      - kafka
 
 volumes:
   zookeeper_data:

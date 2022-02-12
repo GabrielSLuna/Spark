@@ -30,5 +30,13 @@ Transmissão e análise de dados em tempo real utilizando o Apache Kafka, o Apac
 * Com os dois passos anteriores feitos, utilize o seguinte comando dentro do spark para rodar O modelo de machine learning : 
 ./bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.1 --master local[*] /home/gabriel/Downloads/spark-3.0.3-bin-hadoop2.7/examples/src/main/python/sql/streaming/consumidor.py localhost:9092 subscribe Analise-de-Twitter
 
+## Rodar no DOCKER
+* Acessar a branch django-docker
+* Rodar o comando ./run_docker
+* Após a execução de tudo, todos os containers ja estão de pé 
+* O arquivo predict_help.sh detem todos os comando que sao necessario para rodar no docker, para obter as referencias rodar: 
+    * ./predict_help help 
+
+
 
 
