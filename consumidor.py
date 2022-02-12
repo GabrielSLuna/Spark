@@ -57,12 +57,28 @@ if __name__ == "__main__":
 
 
     lines_query = lines.selectExpr("cast(value as string)").select(func.col("value").cast("string").alias("tweet"))
-
+    #lines_query.show()
     teste = lines.selectExpr("cast(value as string)").select(func.col("value").cast("string").alias("tweet"))
 
-    teste = teste.withColumn('Localizacao',split(teste['tweet'],"Localizacao").getItem(1))
-     
-    teste = teste.withColumn('tweet',split(teste['tweet'],"Localizacao").getItem(0))
+
+# df1 = df.withColumn('year', split(df['dob'], '-').getItem(0)) \
+    #   .withColumn('month', split(df['dob'], '-').getItem(1)) \
+    #  .withColumn('day', split(df['dob'], '-').getItem(2))
+
+
+
+
+    teste = teste.withColumn('Tweeter',split(teste['tweet'],"#").getItem(0)) \
+        .withColumn('Localizacao',split(teste['tweet'],"#").getItem(1)) \
+        .withColumn('Nome',split(teste['tweet'],"#").getItem(2)) \
+        .withColumn('Data',split(teste['tweet'],"#")[3])
+    #teste = teste.withColumn('Localizacao',split(teste['tweet'],"Localizacao").getItem(1))
+    #teste = teste.withColumn('tweet',split(teste['tweet'],"#")[0])
+    #teste = teste.withColumn('Localizacao',split(teste['tweet'],"#")[1])
+    #teste = teste.withColumn('Nome',split(teste['tweet'],"#")[2])
+    #teste = teste.withColumn('Data',split(teste['tweet'],"#")[3])
+
+
 
 
 
@@ -111,7 +127,7 @@ if __name__ == "__main__":
    
 
     #pipeline_model = PipelineModel.load("/home/gabriel/Downloads/spark-3.0.3-bin-hadoop2.7/bin/path") 
-    pipeline_model = PipelineModel.load("/home/gabriel/Downloads/spark-3.1.2-bin-hadoop3.2/bin/path") 
+    pipeline_model = PipelineModel.load("/home/gabriel/'Área de Trabalho'/TCC/Spark/path")
 
 
     prediction = pipeline_model.transform(lines_query)
@@ -123,8 +139,8 @@ if __name__ == "__main__":
 
 
 
-    predicao = predicao.select("tweet","Localizacao","prediction")
-    predicao = predicao.filter(predicao.prediction == 1)
+    predicao = predicao.select("Tweeter","Localizacao","Nome","Data","prediction")
+    #predicao = predicao.filter(predicao.prediction == 1)
 
 
 
@@ -159,6 +175,8 @@ if __name__ == "__main__":
 
     #query.awaitTermination()
     testeQuery.awaitTermination()
+
+
 
 
 
