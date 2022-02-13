@@ -1,16 +1,21 @@
 from django.shortcuts import render
 from twetter_settings.settings import BASE_DIR
 import tweepy
-import csv #Import csv
 import json
 import re
 import csv
 import time
 from kafka import KafkaProducer
 import unicodedata
-# import pandas as pd
+from .models import SparkPredict
+from geopy.geocoders import Nominatim
 
 def index(request):
+    number_prediction = SparkPredict.objects.filter(prediction=1).count
+    total_twitter = SparkPredict.objects.all().count
+    twitter_prediction = SparkPredict.objects.filter(prediction=1)
+    geolocator = Nominatim(user_agent="app_twetter")
+    location = geolocator.geocode("175 5th Avenue NYC")
     teste = {
         "Cota NCH Maracanã FIA": "225,15",
         "PL Junho 2021": "R$ 114,55 MI",
@@ -45,12 +50,13 @@ def send_to_producer(request):
     producer = KafkaProducer(bootstrap_servers=['kafka:9092'], value_serializer=json_serializer)
 
     search_words = ["i want to die","i dont want to live anymore","i will kill myself","live","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die"]
-    numberOfTweets = 10000
+    #search_words = ["eu quero morrer", "quero me matar","nao quero viver mais", "vou me matar", "viver", "porra", "qualquer um", "mau", "merda", "tentei", "suicida", "dor", "desejo", "suficiente", "queria", "morrer", "morte", "foda-se", "não me importo", "quero morrer"]
+
     for x in search_words:
         print(x)
         for tweet in tweepy.Cursor(api.search,
                                 q =  x,
-                                # geocode="-22.9110137,-43.2093727,300km",
+                                geocode="-22.9110137,-43.2093727,300km",
 
                                 # since = "2021-12-05",
                                 #until = "2014-02-15",
@@ -69,9 +75,11 @@ def send_to_producer(request):
             tweet.user.location = tweet.user.location.decode("utf-8")
             # print(tweet.user.location) # E o 5 e ultimo. Estava 30C
 
-            #print(tweet.user.screen_name, tweet.created_at, twitter_limpo, tweet.user.location)
-            lista = [twitter_limpo,"#"+tweet.user.location,"#"+tweet.user.screen_name,"#"+tweet.created_at.strftime("%d ,%m, %Y , %H:%M:%S")]
-            #lista = [twitter_limpo,tweet.user.location]
-            producer.send("Analise-de-Twitter", lista)
-            print(lista)
-        # send_to_producer(lista)
+            data = { 'text' : twitter_limpo,
+                 'location' : tweet.user.location,
+                 'name' : tweet.user.screen_name,
+                 'date' : tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            }
+
+            # print(data)
+            producer.send("Analise-de-Twitter", data)

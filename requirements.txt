@@ -2,3 +2,4 @@ Django
 kafka-python
 tweepy==3.9.0
 psycopg2
+geopy
