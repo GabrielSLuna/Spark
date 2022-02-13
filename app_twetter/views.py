@@ -8,6 +8,7 @@ import csv
 import time
 from kafka import KafkaProducer
 import unicodedata
+# import pandas as pd
 
 def index(request):
     teste = {
@@ -49,8 +50,9 @@ def send_to_producer(request):
         print(x)
         for tweet in tweepy.Cursor(api.search,
                                 q =  x,
-                                geocode="-22.9110137,-43.2093727,300km",
-                                # since = "2014-02-14",
+                                # geocode="-22.9110137,-43.2093727,300km",
+
+                                # since = "2021-12-05",
                                 #until = "2014-02-15",
                                 lang = "en").items(400):
 
@@ -68,9 +70,8 @@ def send_to_producer(request):
             # print(tweet.user.location) # E o 5 e ultimo. Estava 30C
 
             #print(tweet.user.screen_name, tweet.created_at, twitter_limpo, tweet.user.location)
-            lista = [twitter_limpo,"Localizacao"+tweet.user.location]
-            # print ('---------------', producer)
+            lista = [twitter_limpo,"#"+tweet.user.location,"#"+tweet.user.screen_name,"#"+tweet.created_at.strftime("%d ,%m, %Y , %H:%M:%S")]
+            #lista = [twitter_limpo,tweet.user.location]
             producer.send("Analise-de-Twitter", lista)
             print(lista)
-        # csvFile.close()
-
+        # send_to_producer(lista)
