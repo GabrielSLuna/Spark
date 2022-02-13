@@ -7,7 +7,7 @@ import pyspark.sql.functions as func
 import time
 from pyspark.ml import PipelineModel
 from pyspark.sql.functions import from_json, col
-from pyspark.sql.types import StructType,StructField, StringType
+from pyspark.sql.types import StructType,StructField, StringType, TimestampType
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
@@ -27,10 +27,10 @@ if __name__ == "__main__":
     spark.sparkContext.setLogLevel("ERROR")  
 
     schema = StructType([
-        StructField("text", StringType(), True),
+        StructField("tweet", StringType(), True),
         StructField("location", StringType(), True),
         StructField("name", StringType(), True),
-        StructField("date", StringType(), True),
+        StructField("date", TimestampType(), True),
         ])
 
     print(schema)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     predicao = pipeline_model.transform(json_teste2)
 
-    predicao = predicao.select("text","location","name","date","prediction")
+    predicao = predicao.select("tweet","location","name","date","prediction")
     #predicao = predicao.filter(predicao.prediction == 1)
 
     # testeQuery = predicao.writeStream.format("console").outputMode("append").option("truncate", "false").start()

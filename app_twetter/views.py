@@ -75,7 +75,7 @@ def send_to_producer(request):
             tweet.user.location = tweet.user.location.decode("utf-8")
             # print(tweet.user.location) # E o 5 e ultimo. Estava 30C
 
-            data = { 'text' : twitter_limpo,
+            data = { 'tweet' : twitter_limpo,
                  'location' : tweet.user.location,
                  'name' : tweet.user.screen_name,
                  'date' : tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")
