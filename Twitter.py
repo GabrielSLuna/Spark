@@ -8,6 +8,7 @@ import time
 from kafka import KafkaProducer
 import unidecode
 import unicodedata
+from json import dumps
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -32,18 +33,16 @@ auth.set_access_token('1401678034625761280-oCm6rlANlvljtBU5Eso8rQeTGYY5Ae', 'wdk
 api = tweepy.API(auth)
 
 # Open/create a file to append data to
-csvFile = open('resultadoFinal.csv', 'a')
 
 #Use csv writer
-csvWriter = csv.writer(csvFile)
-search_words = ["i want to die","i dont want to live anymore","i will kill myself","live","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die"]
+search_words = ["i want to die","i dont want to live anymore","i will kill myself","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die","death"]
 #search_words = ["eu quero morrer", "quero me matar","nao quero viver mais", "vou me matar", "viver", "porra", "qualquer um", "mau", "merda", "tentei", "suicida", "dor", "desejo", "suficiente", "queria", "morrer", "morte", "foda-se", "não me importo", "quero morrer"]
 numberOfTweets = 10000
 for x in search_words:
     print(x)
     for tweet in tweepy.Cursor(api.search,
                                q =  x,
-                               geocode="-22.9110137,-43.2093727,300km",
+                               geocode="-22.9110137,-43.2093727,600km",
 
                                # since = "2021-12-05",
                                #until = "2014-02-15",
@@ -52,7 +51,7 @@ for x in search_words:
         time.sleep(1)
         twitter_limpo = clean_tweet(tweet.text)
         # Write a row to the CSV file. I use encode UTF-8
-        csvWriter.writerow([tweet.user.screen_name,tweet.created_at, twitter_limpo])
+      #  csvWriter.writerow([tweet.user.screen_name,tweet.created_at, twitter_limpo])
 
         tweet.user.location = unicodedata.normalize("NFD", tweet.user.location)
         #Essa parte trata a acentuacao das cidades para não quebrar o código
@@ -62,11 +61,12 @@ for x in search_words:
         tweet.user.location = tweet.user.location.decode("utf-8")
        # print(tweet.user.location) # E o 5 e ultimo. Estava 30C
 
-        #print(tweet.user.screen_name, tweet.created_at, twitter_limpo, tweet.user.location)
-        lista = [twitter_limpo,"#"+tweet.user.location,"#"+tweet.user.screen_name,"#"+tweet.created_at.strftime("%d ,%m, %Y , %H:%M:%S")]
-        #lista = [twitter_limpo,tweet.user.location]
-        producer.send("Analise-de-Twitter", lista)
-        print(lista)
-       # send_to_producer(lista)
-csvFile.close()
+        data = { 'tweet' : twitter_limpo,
+                 'Localizacao' : tweet.user.location,
+                 'Usuario' : tweet.user.screen_name,
+                 'Data' : tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        print(data)
+        producer.send("Analise-de-Twitter",data)
 
