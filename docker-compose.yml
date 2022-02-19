@@ -13,7 +13,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./pg_data:/var/lib/postgresql/data/pgdata
+      - ../pg_data:/var/lib/postgresql/data/pgdata
 
   pgadmin4: 
     container_name: twitter-pgadmin
@@ -91,6 +91,32 @@ services:
     links:
       - kafka
       - db
+
+  redis:
+    # restart: always
+    image: redis:latest
+    container_name: twitter-redis
+    ports:
+      - "6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      # - REDIS_PASSWORD=twitter
+    mem_limit: 50M
+    cpus: '0.50'
+
+  celery:
+    image: web-spark
+    container_name: twitter-worker
+    command: bash -c "celery -A twetter_settings worker -l info -B"
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - web
+    volumes:
+      - ./:/usr/src/app
+    links:
+      - db
+      - redis
 
 volumes:
   zookeeper_data:

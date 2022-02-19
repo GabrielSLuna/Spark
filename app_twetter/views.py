@@ -7,23 +7,26 @@ import csv
 import time
 from kafka import KafkaProducer
 import unicodedata
-from .models import SparkPredict
+from .models import SparkPredict, Locale
 from geopy.geocoders import Nominatim
+from django.db.models import Count
+from django.db.models.functions import TruncDay
+from django.http import JsonResponse
 
 def index(request):
-    number_prediction = SparkPredict.objects.filter(prediction=1).count
+    number_prediction = SparkPredict.objects.filter(prediction=1)
     total_twitter = SparkPredict.objects.all().count
-    twitter_prediction = SparkPredict.objects.filter(prediction=1)
-    geolocator = Nominatim(user_agent="app_twetter")
-    location = geolocator.geocode("175 5th Avenue NYC")
-    teste = {
-        "Cota NCH Maracanã FIA": "225,15",
-        "PL Junho 2021": "R$ 114,55 MI",
-        "Rentabilidade Mês": "-4,56%",
-        "Rentabilidade Ano": "15,27%",
-        "Rentabilidade ITD": "139,67%",
-     }
-    context = {'teste': teste}
+    location = Locale.objects.all()
+    frequency = Locale.objects.values("country").annotate(frequency=Count('country')).order_by("-frequency")
+    tweet_day = list(SparkPredict.objects.filter(prediction=1).annotate(xAxes=TruncDay('date')).values('xAxes').annotate(yAxes=Count('xAxes')).values('xAxes', 'yAxes'))
+
+    context = {
+        'number_prediction': number_prediction,
+        'total_twitter': total_twitter,
+        'location': location,
+        'frequency': frequency,
+        'tweet_day': tweet_day,
+    }
     return render(request, 'index2.html', context)
 
 def json_serializer(data):
@@ -56,7 +59,7 @@ def send_to_producer(request):
         print(x)
         for tweet in tweepy.Cursor(api.search,
                                 q =  x,
-                                geocode="-22.9110137,-43.2093727,300km",
+                                geocode="-10.1689,-48.3317,2000km",
 
                                 # since = "2021-12-05",
                                 #until = "2014-02-15",
@@ -83,3 +86,13 @@ def send_to_producer(request):
 
             # print(data)
             producer.send("Analise-de-Twitter", data)
+
+import datetime
+def graph_tweet(request):
+    tweet_per_day = list(SparkPredict.objects.filter(prediction=1).annotate(t=TruncDay('date')).values('t').annotate(y=Count('t')).values('t', 'y').order_by('t__day'))
+    return JsonResponse({'tweet_per_day': tweet_per_day}, safe=False)
+
+
+def get_layer(request,layer=None):
+    location = list(Locale.objects.all().values('lat', 'lon', 'country', 'state', 'city'))
+    return JsonResponse(location, safe=False)

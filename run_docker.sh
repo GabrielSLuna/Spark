@@ -6,6 +6,8 @@ DJANGO=web
 SPARK=spark
 KAFKA=kafka
 ZOOKEEPER=zookeeper
+REDIS=redis
+WORKER=celery
 
 if [[ "$*" == *windows* ]]
 then
@@ -19,7 +21,7 @@ fi
 sudo service postgresql* stop
 sudo service nginx stop
 
-$DOCKER_COMPOSE up -d $ZOOKEEPER $SPARK $DB
+$DOCKER_COMPOSE up -d $ZOOKEEPER $SPARK $DB $REDIS
 sleep 2
 $DOCKER_COMPOSE up -d $KAFKA 
-$DOCKER_COMPOSE up $DJANGO  
+$DOCKER_COMPOSE up $DJANGO $WORKER

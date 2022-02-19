@@ -138,3 +138,22 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'America/Sao_Paulo'
+CELERY_BEAT_SCHEDULE = {}
+
+from datetime import timedelta
+
+CELERY_BEAT_SCHEDULE = {
+    'task-number-one': {
+        'task': 'app_twetter.tasks.task_create_locale',
+        # 'schedule': timedelta(seconds=1800),
+        'schedule': timedelta(seconds=3000),
+        'args': ()
+    },
+}

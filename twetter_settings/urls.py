@@ -8,4 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('send_to_producer', views.send_to_producer, name='send_producer'),
+    path('graph_tweet', views.graph_tweet, name='graph_tweet'),
+    path('graph_tweet', views.graph_tweet, name='graph_tweet'),
+    path('shp_layer', views.get_layer),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

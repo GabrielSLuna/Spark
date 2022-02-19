@@ -784,88 +784,109 @@
   }
 
   try {
+    let data_graph, labels;
+    $.ajax({
+      url: '/graph_tweet',
+      contentType: 'application/json; charset=utf-8',
+      // data: json_data,
+      success: function(response) {
+          data_graph = response['tweet_per_day'];
+          callchart(data_graph);
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+          console.warn("Erro ao carregar grafico", errorThrown);
+          alertaErro("Erro ao carregar grafico");
+      },
+    });
 
     //Team chart
-    var ctx = document.getElementById("team-chart");
-    if (ctx) {
-      ctx.height = 150;
-      var myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ["2015", "2016", "2017", "2018", "2019", "2020", "2021"],
+    function callchart(params) {
+      var ctx = document.getElementById("team-chart");
+      if (ctx) {
+        ctx.height = 150;
+        var myChart = new Chart(ctx, {
           type: 'line',
-          defaultFontFamily: 'Poppins',
-          datasets: [{
-            data: [18000, 47800, 10000, 15070, 21900, 300000, 380000],
-            label: "Expense",
-            backgroundColor: 'rgba(0,103,255,.15)',
-            borderColor: 'rgba(0,103,255,0.5)',
-            borderWidth: 3.5,
-            pointStyle: 'circle',
-            pointRadius: 5,
-            pointBorderColor: 'transparent',
-            pointBackgroundColor: 'rgba(0,103,255,0.5)',
-          },]
-        },
-        options: {
-          responsive: true,
-          tooltips: {
-            mode: 'index',
-            titleFontSize: 12,
-            titleFontColor: '#000',
-            bodyFontColor: '#000',
-            backgroundColor: '#fff',
-            titleFontFamily: 'Poppins',
-            bodyFontFamily: 'Poppins',
-            cornerRadius: 3,
-            intersect: false,
+          data: {
+            // labels: labels,
+            type: 'line',
+            defaultFontFamily: 'Poppins',
+            datasets: [{
+              data: params,
+              label: "Tweet suicide",
+              backgroundColor: 'rgba(0,103,255,.15)',
+              borderColor: 'rgba(0,103,255,0.5)',
+              borderWidth: 3.5,
+              pointStyle: 'circle',
+              pointRadius: 5,
+              pointBorderColor: 'transparent',
+              pointBackgroundColor: 'rgba(0,103,255,0.5)',
+            },]
           },
-          legend: {
-            display: false,
-            position: 'top',
-            labels: {
-              usePointStyle: true,
-              fontFamily: 'Poppins',
+          options: {
+            responsive: true,
+            tooltips: {
+              mode: 'index',
+              titleFontSize: 12,
+              titleFontColor: '#000',
+              bodyFontColor: '#000',
+              backgroundColor: '#fff',
+              titleFontFamily: 'Poppins',
+              bodyFontFamily: 'Poppins',
+              cornerRadius: 3,
+              intersect: false,
             },
-
-
-          },
-          scales: {
-            xAxes: [{
-              display: true,
-              gridLines: {
-                display: false,
-                drawBorder: false
+            legend: {
+              display: false,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                fontFamily: 'Poppins',
               },
-              scaleLabel: {
-                display: false,
-                labelString: 'Month'
-              },
-              ticks: {
-                fontFamily: "Poppins"
-              }
-            }],
-            yAxes: [{
-              display: true,
-              gridLines: {
-                display: false,
-                drawBorder: false
-              },
-              scaleLabel: {
+  
+  
+            },
+            scales: {
+              xAxes: [{
                 display: true,
-                labelString: 'Value',
-                fontFamily: "Poppins"
-              },
-              ticks: {
-                fontFamily: "Poppins"
-              }
-            }]
-          },
-          title: {
-            display: false,
+                type: 'time',
+                time: {
+                  unit: 'day'
+                },
+                gridLines: {
+                  display: false,
+                  drawBorder: false
+                },
+                scaleLabel: {
+                  display: false,
+                  labelString: 'Day'
+                },
+                ticks: {
+                  fontFamily: "Poppins"
+                }
+              }],
+              yAxes: [{
+                display: true,
+                gridLines: {
+                  display: false,
+                  drawBorder: false
+                },
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Value',
+                  fontFamily: "Poppins"
+                },
+                ticks: {
+                  fontFamily: "Poppins",
+                  beginAtZero: true
+                }
+              }]
+            },
+            title: {
+              display: false,
+            }
           }
-        }
-      });
+        });
+      }
     }
 
 
@@ -1286,141 +1307,239 @@
   // USE STRICT
   "use strict";
 
-  // Map
-  try {
+  var map = new ol.Map({
+    target: 'vmap',
+    layers: [
+      new ol.layer.Tile({
+        source: new ol.source.OSM()
+      })
+    ],
+    view: new ol.View({
+      center: ol.proj.fromLonLat([37.41, 8.82]),
+      zoom: 0
+    })
+  });
 
-    var vmap = $('#vmap');
-    if(vmap[0]) {
-      vmap.vectorMap( {
-        map: 'world_en',
-        backgroundColor: null,
-        color: '#ffffff',
-        hoverOpacity: 0.7,
-        selectedColor: '#1de9b6',
-        enableZoom: true,
-        showTooltip: true,
-        values: sample_data,
-        scaleColors: [ '#1de9b6', '#03a9f5'],
-        normalizeFunction: 'polynomial'
-      });
-    }
+  $.ajax({
+    url: '/shp_layer',
+    contentType: 'application/json; charset=utf-8',
+    success: function(response) {
+      console.log(response);
+      insert_map(response);
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      console.warn("Erro ao carregar grafico", errorThrown);
+    },
+  });
 
-  } catch (error) {
-    console.log(error);
-  }
-
-  // Europe Map
-  try {
-    
-    var vmap1 = $('#vmap1');
-    if(vmap1[0]) {
-      vmap1.vectorMap( {
-        map: 'europe_en',
-        color: '#007BFF',
-        borderColor: '#fff',
-        backgroundColor: '#fff',
-        enableZoom: true,
-        showTooltip: true
-      });
-    }
-
-  } catch (error) {
-    console.log(error);
-  }
-
-  // USA Map
-  try {
-    
-    var vmap2 = $('#vmap2');
-
-    if(vmap2[0]) {
-      vmap2.vectorMap( {
-        map: 'usa_en',
-        color: '#007BFF',
-        borderColor: '#fff',
-        backgroundColor: '#fff',
-        enableZoom: true,
-        showTooltip: true,
-        selectedColor: null,
-        hoverColor: null,
-        colors: {
-            mo: '#001BFF',
-            fl: '#001BFF',
-            or: '#001BFF'
-        },
-        onRegionClick: function ( event, code, region ) {
-            event.preventDefault();
-        }
-      });
-    }
-
-  } catch (error) {
-    console.log(error);
-  }
-
-  // Germany Map
-  try {
-    
-    var vmap3 = $('#vmap3');
-    if(vmap3[0]) {
-      vmap3.vectorMap( {
-        map: 'germany_en',
-        color: '#007BFF',
-        borderColor: '#fff',
-        backgroundColor: '#fff',
-        onRegionClick: function ( element, code, region ) {
-            var message = 'You clicked "' + region + '" which has the code: ' + code.toUpperCase();
-
-            alert( message );
-        }
-      });
-    }
-    
-  } catch (error) {
-    console.log(error);
-  }
+  function insert_map(data) {
+    const features = []
+    Object.keys(data).forEach((key) => {
+        features.push(new ol.Feature({
+                geometry: new ol.geom.Point(
+                        ol.proj.fromLonLat([data[key]['lat'], data[key]['lon']])),
+                name: 'tweet',
+                city: data[key]['city'],
+                country: data[key]['country'],
+                state: data[key]['state']
+            })
+    )})
   
-  // France Map
-  try {
+    // console.log('-------------', baseFeatures);
+    // const getRandomNumber = function (min, ref) {
+    //   return Math.random() * ref + min;
+    // }
+    // const features = [];
+    // for (let i = 0; i < 300; i++) {
+    //   features.push(new ol.Feature({
+    //     geometry: new ol.geom.Point(ol.proj.fromLonLat([
+    //       -getRandomNumber(50, 50), getRandomNumber(10, 50)
+    //     ]))
+    //   }));
+    // }
+    // create the source and layer for random features
+    const vectorSource = new ol.source.Vector({
+      features
+    });
+    const vectorLayer = new ol.layer.Vector({
+      source: vectorSource,
+      style: new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 2,
+          fill: new ol.style.Fill({color: 'red'})
+        })
+      })
+    });
+    // create map and add layers
+    // const map = new ol.Map({
+    //   target: 'vmap',
+    //   layers: [
+    //     new ol.layer.Tile({
+    //       source: new ol.source.OSM()
+    //     }),
+    //     vectorLayer
+    //   ],
+    //   view: new ol.View({
+    //     center: ol.proj.fromLonLat([-75, 35]),
+    //     zoom: 2
+    //   })
+    // })
+    // const vectorSource = new ol.source.Vector({
+    //     features: baseFeatures
+    // });
+
+    // const vectorLayer = new ol.layer.Vector({
+    //   source: vectorSource,
+    //   style: new ol.style.Style({
+    //     image: new ol.style.Circle({
+    //       radius: 2,
+    //       fill: new ol.style.Fill({color: 'red'})
+    //     })
+    //   })
+    // });
+  
+  
+    // baseLayer = new ol.layer.Vector({
+    //         source: vectorSource
+    // })
+    map.addLayer(vectorLayer);
+  }
+
+  // // Map
+  // try {
+
+  //   var vmap = $('#vmap');
+  //   if(vmap[0]) {
+  //     vmap.vectorMap( {
+  //       map: 'world_en',
+  //       backgroundColor: null,
+  //       color: '#ffffff',
+  //       hoverOpacity: 0.7,
+  //       selectedColor: '#1de9b6',
+  //       enableZoom: true,
+  //       showTooltip: true,
+  //       values: sample_data,
+  //       scaleColors: [ '#1de9b6', '#03a9f5'],
+  //       normalizeFunction: 'polynomial',
+  //     });
+  //   }
+
+  // } catch (error) {
+  //   console.log(error);
+  // }
+
+  // // Europe Map
+  // try {
     
-    var vmap4 = $('#vmap4');
-    if(vmap4[0]) {
-      vmap4.vectorMap( {
-        map: 'france_fr',
-        color: '#007BFF',
-        borderColor: '#fff',
-        backgroundColor: '#fff',
-        enableZoom: true,
-        showTooltip: true
-      });
-    }
+  //   var vmap1 = $('#vmap1');
+  //   if(vmap1[0]) {
+  //     vmap1.vectorMap( {
+  //       map: 'europe_en',
+  //       color: '#007BFF',
+  //       borderColor: '#fff',
+  //       backgroundColor: '#fff',
+  //       enableZoom: true,
+  //       showTooltip: true
+  //     });
+  //   }
 
-  } catch (error) {
-    console.log(error);
-  }
+  // } catch (error) {
+  //   console.log(error);
+  // }
 
-  // Russia Map
-  try {
-    var vmap5 = $('#vmap5');
-    if(vmap5[0]) {
-      vmap5.vectorMap( {
-        map: 'russia_en',
-        color: '#007BFF',
-        borderColor: '#fff',
-        backgroundColor: '#fff',
-        hoverOpacity: 0.7,
-        selectedColor: '#999999',
-        enableZoom: true,
-        showTooltip: true,
-        scaleColors: [ '#C8EEFF', '#006491' ],
-        normalizeFunction: 'polynomial'
-      });
-    }
+  // // USA Map
+  // try {
+    
+  //   var vmap2 = $('#vmap2');
+
+  //   if(vmap2[0]) {
+  //     vmap2.vectorMap( {
+  //       map: 'usa_en',
+  //       color: '#007BFF',
+  //       borderColor: '#fff',
+  //       backgroundColor: '#fff',
+  //       enableZoom: true,
+  //       showTooltip: true,
+  //       selectedColor: null,
+  //       hoverColor: null,
+  //       colors: {
+  //           mo: '#001BFF',
+  //           fl: '#001BFF',
+  //           or: '#001BFF'
+  //       },
+  //       onRegionClick: function ( event, code, region ) {
+  //           event.preventDefault();
+  //       }
+  //     });
+  //   }
+
+  // } catch (error) {
+  //   console.log(error);
+  // }
+
+  // // Germany Map
+  // try {
+    
+  //   var vmap3 = $('#vmap3');
+  //   if(vmap3[0]) {
+  //     vmap3.vectorMap( {
+  //       map: 'germany_en',
+  //       color: '#007BFF',
+  //       borderColor: '#fff',
+  //       backgroundColor: '#fff',
+  //       onRegionClick: function ( element, code, region ) {
+  //           var message = 'You clicked "' + region + '" which has the code: ' + code.toUpperCase();
+
+  //           alert( message );
+  //       }
+  //     });
+  //   }
+    
+  // } catch (error) {
+  //   console.log(error);
+  // }
+  
+  // // France Map
+  // try {
+    
+  //   var vmap4 = $('#vmap4');
+  //   if(vmap4[0]) {
+  //     vmap4.vectorMap( {
+  //       map: 'france_fr',
+  //       color: '#007BFF',
+  //       borderColor: '#fff',
+  //       backgroundColor: '#fff',
+  //       enableZoom: true,
+  //       showTooltip: true
+  //     });
+  //   }
+
+  // } catch (error) {
+  //   console.log(error);
+  // }
+
+  // // Russia Map
+  // try {
+  //   var vmap5 = $('#vmap5');
+  //   if(vmap5[0]) {
+  //     vmap5.vectorMap( {
+  //       map: 'russia_en',
+  //       color: '#007BFF',
+  //       borderColor: '#fff',
+  //       backgroundColor: '#fff',
+  //       hoverOpacity: 0.7,
+  //       selectedColor: '#999999',
+  //       enableZoom: true,
+  //       showTooltip: true,
+  //       scaleColors: [ '#C8EEFF', '#006491' ],
+  //       normalizeFunction: 'polynomial'
+  //     });
+  //   }
 
 
-  } catch (error) {
-    console.log(error);
-  }
+  // } catch (error) {
+  //   console.log(error);
+  // }
   
   // Brazil Map
   try {
