@@ -153,7 +153,7 @@ CELERY_BEAT_SCHEDULE = {
     'task-number-one': {
         'task': 'app_twetter.tasks.task_create_locale',
         # 'schedule': timedelta(seconds=1800),
-        'schedule': timedelta(seconds=3000),
+        'schedule': timedelta(seconds=3600),
         'args': ()
     },
 }

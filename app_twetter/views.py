@@ -14,7 +14,7 @@ from django.db.models.functions import TruncDay
 from django.http import JsonResponse
 
 def index(request):
-    number_prediction = SparkPredict.objects.filter(prediction=1)
+    number_prediction = SparkPredict.objects.filter(prediction=1).reverse()
     total_twitter = SparkPredict.objects.all().count
     location = Locale.objects.all()
     frequency = Locale.objects.values("country").annotate(frequency=Count('country')).order_by("-frequency")
@@ -56,7 +56,7 @@ def send_to_producer(request):
     #search_words = ["eu quero morrer", "quero me matar","nao quero viver mais", "vou me matar", "viver", "porra", "qualquer um", "mau", "merda", "tentei", "suicida", "dor", "desejo", "suficiente", "queria", "morrer", "morte", "foda-se", "não me importo", "quero morrer"]
 
     for x in search_words:
-        print(x)
+        # print(x)
         for tweet in tweepy.Cursor(api.search,
                                 q =  x,
                                 geocode="-10.1689,-48.3317,2000km",
@@ -92,7 +92,52 @@ def graph_tweet(request):
     tweet_per_day = list(SparkPredict.objects.filter(prediction=1).annotate(t=TruncDay('date')).values('t').annotate(y=Count('t')).values('t', 'y').order_by('t__day'))
     return JsonResponse({'tweet_per_day': tweet_per_day}, safe=False)
 
-
+from django.core.serializers.json import DjangoJSONEncoder
 def get_layer(request,layer=None):
-    location = list(Locale.objects.all().values('lat', 'lon', 'country', 'state', 'city'))
-    return JsonResponse(location, safe=False)
+    sensor_data = []
+    location = Locale.objects.all().values('sigla').annotate(len=Count('sigla')).values('sigla', 'len')
+    for loc in location:
+        sensor_data.append([loc['sigla'], loc['len']])
+    
+    # json_list = json.dumps(sensor_data, cls=DjangoJSONEncoder)
+    # print('-----------', json_list)
+
+    return JsonResponse(sensor_data, safe=False)
+
+
+# function to return key for any value
+def get_key(val):
+    states = {
+        'AC': 'Acre',
+        'AL': 'Alagoas',
+        'AP': 'Amapá',
+        'AM': 'Amazonas',
+        'BA': 'Bahia',
+        'CE': 'Ceará',
+        'DF': 'Distrito Federal',
+        'ES': 'Espírito Santo',
+        'GO': 'Goiás',
+        'MA': 'Maranhão',
+        'MT': 'Mato Grosso',
+        'MS': 'Mato Grosso do Sul',
+        'MG': 'Minas Gerais',
+        'PA': 'Pará',
+        'PB': 'Paraíba',
+        'PR': 'Paraná',
+        'PE': 'Pernambuco',
+        'PI': 'Piauí',
+        'RJ': 'Rio de Janeiro',
+        'RN': 'Rio Grande do Norte',
+        'RS': 'Rio Grande do Sul',
+        'RO': 'Rondônia',
+        'RR': 'Roraima',
+        'SC': 'Santa Catarina',
+        'SP': 'São Paulo',
+        'SE': 'Sergipe',
+        'TO': 'Tocantins'
+    }
+    for key, value in states.items():
+        if val == value:
+            return 'BR-'+key
+ 
+    return ""

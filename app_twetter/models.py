@@ -13,12 +13,11 @@ class SparkPredict(models.Model):
         ordering = ['date']
     
 class Locale(models.Model):
-    lat = models.FloatField(('Latitude'), blank=True, null=True)
-    lon = models.FloatField(('Longitude'), blank=True, null=True)
     country = models.CharField(max_length=70, blank=True, null=True)  
     state = models.CharField(max_length=70, blank=True, null=True)
     city = models.CharField(max_length=70, blank=True, null=True)
     place_id = models.IntegerField(blank=True, null=True)
+    sigla = models.CharField(max_length=10, blank=True, null=True)
     spark_id = models.ForeignKey(SparkPredict, on_delete=models.CASCADE)
     class Meta:
         db_table = 'twitter_location'
