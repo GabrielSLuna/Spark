@@ -141,3 +141,9 @@ def get_key(val):
             return 'BR-'+key
  
     return ""
+
+def get_words_frequency(request, word=None):
+    word = request.GET.get('data')
+    list_words = list(SparkPredict.objects.filter(tweet__icontains=word).annotate(t=TruncDay('date')).values('t').annotate(y=Count('t')).values('t', 'y').order_by('t__day'))
+
+    return JsonResponse(list_words, safe=False)

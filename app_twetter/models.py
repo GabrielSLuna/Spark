@@ -12,6 +12,17 @@ class SparkPredict(models.Model):
         db_table = 'spark_twitter'
         ordering = ['date']
     
+    def get_most_used_words(self, count):
+        words = {}
+        tweet = self.tweet.split()
+        for word in tweet:
+            if word in words:
+                words[word] += 1
+            else:
+                words[word] = 1
+        top_10_words = sorted(words.items(),key=lambda x:-x[1])[:count]
+        return top_10_words
+    
 class Locale(models.Model):
     country = models.CharField(max_length=70, blank=True, null=True)  
     state = models.CharField(max_length=70, blank=True, null=True)
@@ -21,6 +32,8 @@ class Locale(models.Model):
     spark_id = models.ForeignKey(SparkPredict, on_delete=models.CASCADE)
     class Meta:
         db_table = 'twitter_location'
+
+    
 
 
 

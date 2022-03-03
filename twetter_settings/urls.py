@@ -11,4 +11,5 @@ urlpatterns = [
     path('graph_tweet', views.graph_tweet, name='graph_tweet'),
     path('graph_tweet', views.graph_tweet, name='graph_tweet'),
     path('shp_layer', views.get_layer),
+    path('get_word_frequency', views.get_words_frequency),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

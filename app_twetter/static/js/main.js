@@ -2,6 +2,7 @@
 (function ($) {
   // USE STRICT
   "use strict";
+
   try {
     let data_graph, labels;
     $.ajax({
@@ -17,13 +18,13 @@
           alertaErro("Erro ao carregar grafico");
       },
     });
-
+    var myChart;
     //Team chart
     function callchart(params) {
       var ctx = document.getElementById("team-chart");
       if (ctx) {
         ctx.height = 150;
-        var myChart = new Chart(ctx, {
+        myChart = new Chart(ctx, {
           type: 'line',
           data: {
             // labels: labels,
@@ -108,6 +109,26 @@
       }
     }
 
+  $('#select2_chart').select2({
+    minimumResultsForSearch: 20,
+    dropdownParent: $(this).next('.dropDownSelect2')
+  }).on("change", function (e) {
+    $.ajax({
+      url: '/get_word_frequency',
+      contentType: 'application/json; charset=utf-8',
+      data: {'data': this.value},
+      success: function(response) {
+        myChart.destroy();
+        callchart(response);
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+          console.warn("Erro ao carregar grafico", errorThrown);
+          alertaErro("Erro ao carregar grafico");
+      },
+    });
+  });
+
+  
 
   } catch (error) {
     console.log(error);
