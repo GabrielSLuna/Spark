@@ -30,7 +30,8 @@ services:
       
   nginx:
     restart: always
-    build: ./nginx/
+    # build: ./nginx/
+    image: nginx:latest
     container_name: nginx
     ports:
       - "80:80"
@@ -39,6 +40,7 @@ services:
       - ./nginx/nginx-aws:/etc/nginx/
       - ./nginx/nginx-aws/nginx.conf:/etc/nginx/nginx.conf
       - ../certs:/etc/nginx/certs
+      - ./static:/usr/src/app  
     links:
       - web:web
 
