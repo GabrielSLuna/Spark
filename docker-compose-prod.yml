@@ -1,0 +1,139 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgres
+    # restart: always
+    container_name: twitter-db
+    environment:
+      POSTGRES_PASSWORD: twitter
+      POSTGRES_USER: twitter
+      POSTGRES_DB: twitter
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../pg_data:/var/lib/postgresql/data/pgdata
+
+  pgadmin4: 
+    container_name: twitter-pgadmin
+    environment: 
+      - PGADMIN_DEFAULT_EMAIL=dev@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=123456
+      - PGADMIN_LISTEN_PORT=5050
+    image: dpage/pgadmin4
+    ports: 
+      - "5050:5050"
+    # restart: unless-stopped
+    links:
+      - db
+      
+  nginx:
+    restart: always
+    build: ./nginx/
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-aws:/etc/nginx/
+      - ./nginx/nginx-aws/nginx.conf:/etc/nginx/nginx.conf
+      - ../certs:/etc/nginx/certs
+    links:
+      - web:web
+
+  web:
+    build:
+      context: .
+    image: web-spark
+    container_name: twitter-web
+    environment:
+      - PYTHONUNBUFFERED=1      # atualizacao automatica do log do django
+    ports:
+      - "8007:8007" # Porta para attach do vs code ao código python rodando no docker
+    links:
+      - kafka
+      - db
+    volumes:
+      - .:/usr/src/app
+    command: bash -c "python manage.py runserver 0.0.0.0:8007"
+
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.7
+    ports:
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+# create first Kafka node
+  kafka:
+    image: docker.io/bitnami/kafka:2.8.1
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    container_name: twitter-kafka
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+
+
+# create Spark master
+  spark:
+    image: docker.io/bitnami/spark:3.1.2
+    container_name: twitter-spark
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    user: root
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./path:/opt/bitnami/spark/path
+      # - ./spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
+      - ./jars_dir:/opt/bitnami/spark/ivy:z
+    links:
+      - kafka
+      - db
+
+  redis:
+    # restart: always
+    image: redis:latest
+    container_name: twitter-redis
+    ports:
+      - "6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      # - REDIS_PASSWORD=twitter
+    mem_limit: 50M
+    cpus: '0.50'
+
+  celery:
+    image: web-spark
+    container_name: twitter-worker
+    command: bash -c "celery -A twetter_settings worker -l info -B"
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - web
+    volumes:
+      - ./:/usr/src/app
+    links:
+      - db
+      - redis
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
