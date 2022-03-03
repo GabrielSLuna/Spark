@@ -89,7 +89,7 @@ def send_to_producer(request):
 
 import datetime
 def graph_tweet(request):
-    tweet_per_day = list(SparkPredict.objects.filter(prediction=1).annotate(t=TruncDay('date')).values('t').annotate(y=Count('t')).values('t', 'y').order_by('t__day'))
+    tweet_per_day = list(SparkPredict.objects.filter(prediction=1).annotate(t=TruncDay('date')).values('t').annotate(y=Count('t')).values('t', 'y').order_by('-t'))
     return JsonResponse({'tweet_per_day': tweet_per_day}, safe=False)
 
 from django.core.serializers.json import DjangoJSONEncoder
