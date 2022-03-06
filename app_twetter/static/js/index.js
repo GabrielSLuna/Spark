@@ -7,26 +7,6 @@ google.charts.setOnLoadCallback(drawRegionsMap);
 
 
 function drawRegionsMap() {
-    var data = google.visualization.arrayToDataTable([
-        ['State', 'Tweet Suicide'],
-        ["BR-SE", 2]
-    //       ['BR-PE', 300],
-    //       ['BR-AM', 400]
-  
-      ]);
-
-    $.ajax({
-        url: '/shp_layer',
-        contentType: 'application/json; charset=utf-8',
-        success: function(response) {
-            console.log(response);
-            data.addRows(response);
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.warn("Erro ao carregar grafico", errorThrown);
-        },
-    });
-    
     var options = {};
 
     var chart = new google.visualization.GeoChart(document.getElementById('vmap'));
@@ -41,5 +21,27 @@ function drawRegionsMap() {
         } // orange to blue 
     };
 
-    chart.draw(data, options);
+    $.ajax({
+        url: '/shp_layer',
+        contentType: 'application/json; charset=utf-8',
+        success: function(response) {
+            console.log(response);
+            // let data = google.visualization.arrayToDataTable([]);
+            let data = new google.visualization.DataTable();
+            data.addColumn('string', 'State');
+            data.addColumn('number', 'Tweet Suicide');
+            // let datum = [['State', 'Tweet Suicide']].concat(response);
+            // for (var d in datum) {
+            //     data.addRows(datum);
+            // }
+            data.addRows(response);
+
+            chart.draw(data, options);
+
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.warn("Erro ao carregar grafico", errorThrown);
+        },
+    });
+    
 }

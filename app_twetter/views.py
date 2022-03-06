@@ -97,10 +97,8 @@ def get_layer(request,layer=None):
     sensor_data = []
     location = Locale.objects.all().values('sigla').annotate(len=Count('sigla')).values('sigla', 'len')
     for loc in location:
-        sensor_data.append([loc['sigla'], loc['len']])
-    
-    # json_list = json.dumps(sensor_data, cls=DjangoJSONEncoder)
-    # print('-----------', json_list)
+        if loc['sigla']:
+            sensor_data.append([loc['sigla'], loc['len']])
 
     return JsonResponse(sensor_data, safe=False)
 
