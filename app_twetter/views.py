@@ -52,7 +52,7 @@ def send_to_producer(request):
 
     producer = KafkaProducer(bootstrap_servers=['kafka:9092'], value_serializer=json_serializer)
 
-    search_words = ["i want to die","i dont want to live anymore","i will kill myself","live","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die"]
+    search_words = ["i want to die","i dont want to live anymore","i will kill myself","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die"]
     #search_words = ["eu quero morrer", "quero me matar","nao quero viver mais", "vou me matar", "viver", "porra", "qualquer um", "mau", "merda", "tentei", "suicida", "dor", "desejo", "suficiente", "queria", "morrer", "morte", "foda-se", "não me importo", "quero morrer"]
 
     for x in search_words:
