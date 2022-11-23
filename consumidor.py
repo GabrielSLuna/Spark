@@ -56,7 +56,7 @@ if __name__ == "__main__":
     json_teste2 = json_teste.select(col("from_json(value).*"))
 
 
-    pipeline_model = PipelineModel.load("/home/gabriel/Área de Trabalho/TCC/Spark/path")
+    pipeline_model = PipelineModel.load("/pathPolitica")
 
     predicao = pipeline_model.transform(json_teste2)
 

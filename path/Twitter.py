@@ -14,9 +14,11 @@ def json_serializer(data):
 producer = KafkaProducer(bootstrap_servers=['localhost:9092'] , value_serializer=json_serializer)
 
 
-
-
 def clean_tweet(tweet):
+    # tweet2 = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", str(tweet)).split())
+    # tweet3 = re.sub(r'^RT[\s]+', '', tweet2)
+    # return tweet3
+    tweet = normalize('NFKD', tweet).encode('ASCII','ignore').decode('ASCII')
     tweet2 = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", str(tweet)).split())
     tweet3 = re.sub(r'^RT[\s]+', '', tweet2)
     return tweet3
@@ -34,8 +36,9 @@ api = tweepy.API(auth)
 # Open/create a file to append data to
 
 #Use csv writer
-search_words = ["i want to die","i dont want to live anymore","i will kill myself","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die","death"]
+# search_words = ["i want to die","i dont want to live anymore","i will kill myself","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die","death"]
 #search_words = ["eu quero morrer", "quero me matar","nao quero viver mais", "vou me matar", "viver", "porra", "qualquer um", "mau", "merda", "tentei", "suicida", "dor", "desejo", "suficiente", "queria", "morrer", "morte", "foda-se", "não me importo", "quero morrer"]
+search_words = ["bolsonaro","lula","eleição","pt","democracia","bandeira","nacional"]
 numberOfTweets = 10000
 for x in search_words:
     print(x)
@@ -45,7 +48,7 @@ for x in search_words:
 
                                # since = "2021-12-05",
                                #until = "2014-02-15",
-                               lang = "en").items(400):
+                               lang = "pt").items(400):
 
         time.sleep(1)
         twitter_limpo = clean_tweet(tweet.text)

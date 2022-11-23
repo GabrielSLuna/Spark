@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.Tokenizer","timestamp":1668997906373,"sparkVersion":"3.1.2","uid":"Tokenizer_744cee6259e2","paramMap":{"outputCol":"Sentimentos","inputCol":"tweet"},"defaultParamMap":{"outputCol":"Tokenizer_744cee6259e2__output"}}
