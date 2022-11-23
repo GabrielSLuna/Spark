@@ -12,6 +12,7 @@ from geopy.geocoders import Nominatim
 from django.db.models import Count
 from django.db.models.functions import TruncDay
 from django.http import JsonResponse
+from unicodedata import normalize
 
 def index(request):
     number_prediction = SparkPredict.objects.filter(prediction=1).reverse()
@@ -34,13 +35,14 @@ def json_serializer(data):
 
 
 def clean_tweet(tweet):
+    tweet = normalize('NFKD', tweet).encode('ASCII','ignore').decode('ASCII')
     tweet2 = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", str(tweet)).split())
     tweet3 = re.sub(r'^RT[\s]+', '', tweet2)
     return tweet3
 
 def send_to_producer(request):
-    auth = tweepy.auth.OAuthHandler('YCRvBi8r0LNZdb4WuYL4bNIEJ', 'VzdKny2yud9vahUfBdnYcJZmwAzFu4NC2KJmqTZEM5CBjSHbPZ')
-    auth.set_access_token('1401678034625761280-oCm6rlANlvljtBU5Eso8rQeTGYY5Ae', 'wdkiNklaqpCn4gKTzNd7x1WqZfWb5DOrY2n1LpUVSVz3W')
+    auth = tweepy.auth.OAuthHandler('f8BozVuyopMWJkp781gbzDTQ7', '9xfzaZfUJrYVTGP1MNffIoG5XavdEvUVS1vbxnoJkgadaqAx1f')
+    auth.set_access_token('1401678034625761280-swJAzsH9C86cSYQ5OetNiYKSeE92l2', 'k3nZhkBZQyUy2fqaLjcytLKVQQQ7SZpUMCQky81I1pYRw')
 
     api = tweepy.API(auth)
 
@@ -52,8 +54,9 @@ def send_to_producer(request):
 
     producer = KafkaProducer(bootstrap_servers=['kafka:9092'], value_serializer=json_serializer)
 
-    search_words = ["i want to die","i dont want to live anymore","i will kill myself","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die"]
+    # search_words = ["i want to die","i dont want to live anymore","i will kill myself","fucking","anyone","bad","shit","tried","suicidal","pain","wish","enough","wanted","die","death","fuck","i dont care","i want to die"]
     #search_words = ["eu quero morrer", "quero me matar","nao quero viver mais", "vou me matar", "viver", "porra", "qualquer um", "mau", "merda", "tentei", "suicida", "dor", "desejo", "suficiente", "queria", "morrer", "morte", "foda-se", "não me importo", "quero morrer"]
+    search_words = ["bolsonaro","lula","eleição","pt","democracia","bandeira","nacional"]
 
     for x in search_words:
         # print(x)
@@ -63,7 +66,7 @@ def send_to_producer(request):
 
                                 # since = "2021-12-05",
                                 #until = "2014-02-15",
-                                lang = "en").items(400):
+                                lang = "pt").items(400):
 
             time.sleep(1)
             twitter_limpo = clean_tweet(tweet.text)
